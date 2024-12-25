@@ -29,45 +29,53 @@ public class CustomerService {
         return customerRepository.findAll();
     }
 
-    public void registerCustomer(CustomerDTO customerDTO) {
-        User user = new User();
-        user.setRole("CUSTOMER");
-        user.setPassword(new BCryptPasswordEncoder().encode(customerDTO.getPassword()));
-        user.setUsername(customerDTO.getUsername());
-        user.setEmail(customerDTO.getEmail());
-        user.setName(customerDTO.getName());
+    public void registerCustomer(User user , CustomerDTO customerDTO){
 
-        Customer customer=new Customer();
+        User user1 = new User();
+        user1.setUsername(user.getUsername());
+        user1.setName(user.getName());
+        user1.setPassword(user.getPassword());
+        user1.setEmail(user.getEmail());
+        user1.setRole("CUSTOMER");
+
+        String hash = new BCryptPasswordEncoder().encode(user1.getPassword());
+
+        Customer customer = new Customer();
+        customer.setId(customerDTO.getUser_id());
         customer.setPhoneNumber(customerDTO.getPhoneNumber());
-        customer.setUser(user);
-        user.setCustomer(customer);
+
+
+        user1.setPassword(hash);
+        user1.setCustomer(customer);
+        customer.setUser(user1);
+
         customerRepository.save(customer);
-        authRepository.save(user);
-    }
-
-    public void updateCustomer(CustomerDTO customerDTO, User user) {
-        User user1 = authRepository.findUserByUsername(user.getUsername());
-        if (user1 == null) {
-            throw new ApiException("User not found");
-        }
-
-        Customer customer = customerRepository.findCustomerById(user1.getId());
-        if (customer == null) {
-            throw new ApiException("Customer not found");
-        }
-
-        user1.setName(customerDTO.getName());
-        user1.setEmail(customerDTO.getEmail());
-
-        if (customerDTO.getPassword() != null && !customerDTO.getPassword().isEmpty()) {
-            user1.setPassword(new BCryptPasswordEncoder().encode(customerDTO.getPassword()));
-        }
-
-        customer.setPhoneNumber(customerDTO.getPhoneNumber());
-
         authRepository.save(user1);
-        customerRepository.save(customer);
     }
+
+//    public void updateCustomer(CustomerDTO customerDTO, User user) {
+//        User user1 = authRepository.findUserByUsername(user.getUsername());
+//        if (user1 == null) {
+//            throw new ApiException("User not found");
+//        }
+//
+//        Customer customer = customerRepository.findCustomerById(user1.getId());
+//        if (customer == null) {
+//            throw new ApiException("Customer not found");
+//        }
+//
+//        user1.setName(customerDTO.getName());
+//        user1.setEmail(customerDTO.getEmail());
+//
+//        if (customerDTO.getPassword() != null && !customerDTO.getPassword().isEmpty()) {
+//            user1.setPassword(new BCryptPasswordEncoder().encode(customerDTO.getPassword()));
+//        }
+//
+//        customer.setPhoneNumber(customerDTO.getPhoneNumber());
+//
+//        authRepository.save(user1);
+//        customerRepository.save(customer);
+//    }
 
     public void deleteCustomer(Integer id) {
         Customer customer = customerRepository.findCustomerById(id);
